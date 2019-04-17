@@ -466,7 +466,7 @@ private[oap] class DataSourceMetaBuilder {
     this
   }
 
-  def withNewVersion(schema: StructType): this.type = {
+  def withNewVersion(version: Version): this.type = {
     this.version = version
     this
   }

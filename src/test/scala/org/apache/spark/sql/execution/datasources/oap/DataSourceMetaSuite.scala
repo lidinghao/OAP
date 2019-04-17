@@ -76,9 +76,8 @@ class DataSourceMetaSuite extends SharedOapContext with BeforeAndAfter {
       .addIndexMeta(IndexMeta("index3", "15cc47fb3e0", BTreeIndex()
         .appendEntry(BTreeIndexEntry(1, Descending))
         .appendEntry(BTreeIndexEntry(0, Ascending))))
-      .withNewSchema(new StructType()
-        .add("a", IntegerType).add("b", IntegerType).add("c", StringType))
       .withNewSchema(schema)
+      .withNewVersion(version)
       .withNewDataReaderClassName("NotExistedDataFileClassName")
       .build()
 
@@ -626,8 +625,7 @@ class DataSourceMetaSuite extends SharedOapContext with BeforeAndAfter {
     }
     val largeSchema = StructType(fields)
     assert(largeSchema.json.getBytes(StandardCharsets.UTF_8).length > 65535)
-    val path = new Path(
-      new File(tmpDir.getAbsolutePath, "testOap.meta").getAbsolutePath)
+    val path = new Path(new File(tmpDir.getAbsolutePath, "testOap.meta").getAbsolutePath)
     writeMetaFile(path, largeSchema, Version.latestVersion())
     val oapMeta = DataSourceMeta.initialize(path, new Configuration())
     assert(oapMeta.schema == largeSchema)
@@ -639,8 +637,7 @@ class DataSourceMetaSuite extends SharedOapContext with BeforeAndAfter {
       testSchema = testSchema.add(s"test_schema_column_$a", IntegerType)
     }
     for (version <- Version.allVersions()) {
-      val path = new Path(
-        new File(tmpDir.getAbsolutePath, s"version_$version.meta").getAbsolutePath)
+      val path = new Path(new File(tmpDir.getAbsolutePath, s"test_$version.meta").getAbsolutePath)
       writeMetaFile(path, testSchema, version)
       val oapMeta = DataSourceMeta.initialize(path, new Configuration())
       assert(oapMeta.schema == testSchema)
