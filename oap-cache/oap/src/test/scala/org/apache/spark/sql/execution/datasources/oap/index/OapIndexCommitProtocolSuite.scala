@@ -29,7 +29,7 @@ import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl
 import org.apache.spark.sql.test.oap.SharedOapContext
 import org.apache.spark.util.Utils
 
-class OapIndexCommitProtocolSuite extends SharedOapContext{
+class OapIndexCommitProtocolSuite extends SharedOapContext {
   test("newTaskTempFile") {
     val attempt = "attempt_200707121733_0001_m_000000_0"
     val taskID = TaskAttemptID.forName(attempt)

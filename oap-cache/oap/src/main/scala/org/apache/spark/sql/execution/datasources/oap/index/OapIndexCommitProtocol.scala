@@ -31,9 +31,9 @@ import org.apache.spark.sql.internal.oap.OapConf
  * the actual output committer.
  */
 class OapIndexCommitProtocol(
-      jobId: String,
-      path: String,
-      dynamicPartitionOverwrite: Boolean = false)
+    jobId: String,
+    path: String,
+    dynamicPartitionOverwrite: Boolean = false)
   extends HadoopMapReduceCommitProtocol(jobId, path, dynamicPartitionOverwrite)
     with Serializable with Logging {
 
@@ -42,9 +42,8 @@ class OapIndexCommitProtocol(
 
   override protected def setupCommitter(context: TaskAttemptContext): OutputCommitter = {
     val algorithmVersion =
-      SparkEnv.get.conf.getInt(OapConf.OAP_INDEXFILEOUTPUTCOMMITTER_ALGORITHM_VERSION.key,
-        OapConf.OAP_INDEXFILEOUTPUTCOMMITTER_ALGORITHM_VERSION.defaultValue.get)
-    val tempDirName = "_temporary_" + jobId
+      SparkEnv.get.conf.get(OapConf.OAP_INDEXFILEOUTPUTCOMMITTER_ALGORITHM_VERSION)
+    val tempDirName = s"_temporary_$jobId"
     committer = new OapIndexFileOutputCommitter(
       new Path(path), context, tempDirName, algorithmVersion)
     logInfo(s"Using output committer class ${committer.getClass.getCanonicalName}")
