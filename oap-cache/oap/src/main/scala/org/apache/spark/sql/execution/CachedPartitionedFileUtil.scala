@@ -30,17 +30,15 @@ object CachedPartitionedFileUtil {
       file: FileStatus,
       filePath: Path,
       partitionValues: InternalRow): Seq[PartitionedFile] = {
-      Seq(getPartitionedFile(file, filePath, partitionValues))
+    Seq(getPartitionedFile(file, filePath, partitionValues))
   }
 
   def getPartitionedFile(
       file: FileStatus,
       filePath: Path,
       partitionValues: InternalRow): PartitionedFile = {
-    // oap cache added code begin
     val cachedHosts = OapRuntime.getOrCreate.fiberSensor.getHosts(file.getPath.toString).toArray
     val hosts = cachedHosts ++ getBlockHosts(getBlockLocations(file), 0, file.getLen)
-    // oap cache added code end
     PartitionedFile(partitionValues, filePath.toUri.toString, 0, file.getLen, hosts)
   }
 
