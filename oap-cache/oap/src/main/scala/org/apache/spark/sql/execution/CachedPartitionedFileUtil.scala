@@ -17,31 +17,20 @@
 
 package org.apache.spark.sql.execution
 
-import org.apache.hadoop.fs.{BlockLocation, FileStatus, LocatedFileStatus, Path}
-
-import org.apache.spark.sql.SparkSession
+import org.apache.hadoop.fs.BlockLocation
+import org.apache.hadoop.fs.FileStatus
+import org.apache.hadoop.fs.LocatedFileStatus
+import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.execution.datasources._
 import org.apache.spark.sql.oap.OapRuntime
 
-object PartitionedFileUtil {
-  def splitFiles(
-      sparkSession: SparkSession,
+object CachedPartitionedFileUtil {
+  def splitFilesWithCacheLocality(
       file: FileStatus,
       filePath: Path,
-      isSplitable: Boolean,
-      maxSplitBytes: Long,
       partitionValues: InternalRow): Seq[PartitionedFile] = {
-    if (isSplitable) {
-      (0L until file.getLen by maxSplitBytes).map { offset =>
-        val remaining = file.getLen - offset
-        val size = if (remaining > maxSplitBytes) maxSplitBytes else remaining
-        val hosts = getBlockHosts(getBlockLocations(file), offset, size)
-        PartitionedFile(partitionValues, filePath.toUri.toString, offset, size, hosts)
-      }
-    } else {
       Seq(getPartitionedFile(file, filePath, partitionValues))
-    }
   }
 
   def getPartitionedFile(
