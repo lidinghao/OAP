@@ -39,13 +39,13 @@ object CachedPartitionedFileUtil {
       filePath: Path,
       partitionValues: InternalRow): PartitionedFile = {
     val cachedHosts = OapRuntime.getOrCreate.fiberSensor.getHosts(file.getPath.toString).toArray
-    val hosts = cachedHosts ++ getBlockHosts(getBlockLocations(file), 0, file.getLen)
+    val hosts = cachedHosts ++ getBlockHosts(getBlockLocations(file), file.getLen)
     PartitionedFile(partitionValues, filePath.toUri.toString, 0, file.getLen, hosts)
   }
 
   private def getBlockLocations(file: FileStatus): Array[BlockLocation] = file match {
     case f: LocatedFileStatus => f.getBlockLocations
-    case f => Array.empty[BlockLocation]
+    case _ => Array.empty[BlockLocation]
   }
   // Given locations of all blocks of a single file, `blockLocations`, and an `(offset, length)`
   // pair that represents a segment of the same file, find out the block that contains the largest
@@ -53,26 +53,25 @@ object CachedPartitionedFileUtil {
   // returns an empty array.
   private def getBlockHosts(
       blockLocations: Array[BlockLocation],
-      offset: Long,
       length: Long): Array[String] = {
     val candidates = blockLocations.map {
       // The fragment starts from a position within this block. It handles the case where the
       // fragment is fully contained in the block.
-      case b if b.getOffset <= offset && offset < b.getOffset + b.getLength =>
-        b.getHosts -> (b.getOffset + b.getLength - offset).min(length)
+      case b if b.getOffset == 0 && 0 < b.getOffset + b.getLength =>
+        b.getHosts -> (b.getOffset + b.getLength).min(length)
 
       // The fragment ends at a position within this block
-      case b if b.getOffset < offset + length && offset + length < b.getOffset + b.getLength =>
-        b.getHosts -> (offset + length - b.getOffset)
+      case b if b.getOffset < length && length < b.getOffset + b.getLength =>
+        b.getHosts -> (length - b.getOffset)
 
       // The fragment fully contains this block
-      case b if offset <= b.getOffset && b.getOffset + b.getLength <= offset + length =>
+      case b if 0 <= b.getOffset && b.getOffset + b.getLength <= length =>
         b.getHosts -> b.getLength
 
       // The fragment doesn't intersect with this block
       case b =>
         b.getHosts -> 0L
-    }.filter { case (hosts, size) =>
+    }.filter { case (_, size) =>
       size > 0L
     }
 
@@ -84,4 +83,3 @@ object CachedPartitionedFileUtil {
     }
   }
 }
-
