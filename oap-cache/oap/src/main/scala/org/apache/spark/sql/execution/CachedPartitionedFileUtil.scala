@@ -21,6 +21,7 @@ import org.apache.hadoop.fs.BlockLocation
 import org.apache.hadoop.fs.FileStatus
 import org.apache.hadoop.fs.LocatedFileStatus
 import org.apache.hadoop.fs.Path
+
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.execution.datasources._
 import org.apache.spark.sql.oap.OapRuntime
